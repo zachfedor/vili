@@ -1,14 +1,17 @@
 {
-  "name"         : "vili",
-  "version"      : "0.0.0",
-  "description"  : "track time",
-  "main"         : "server.js",
-  "author"       : "zachfedor",
-  "dependencies" : {
-    "express"    : "~4.7.2",
-    "mongoose"   : "~3.6.2",
-    "morgan"     : "~1.2.2",
-    "body-parser": "~1.5.2",
-    "method-override": "~2.1.2"
+    "name"         : "vili",
+    "version"      : "0.0.0",
+    "description"  : "track time, gain willpower",
+    "main"         : "server.js",
+    "author"       : "zachfedor",
+    "license"      : "MIT",
+    "homepage"     : "http://vili.hickory.io",
+    "repository"   : {
+        "type" : "git",
+        "url"  : "git@github.com:zachfedor/vili.git"
+    },
+    "dependencies" : {
+        "express"    : "latest",
+        "mongoose"   : "latest"
     }
 }
