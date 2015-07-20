@@ -1,17 +1,20 @@
 {
-    "name"         : "vili",
-    "version"      : "0.0.0",
-    "description"  : "track time, gain willpower",
-    "main"         : "server.js",
-    "author"       : "zachfedor",
-    "license"      : "MIT",
-    "homepage"     : "http://vili.hickory.io",
-    "repository"   : {
-        "type" : "git",
-        "url"  : "git@github.com:zachfedor/vili.git"
-    },
-    "dependencies" : {
-        "express"    : "latest",
-        "mongoose"   : "latest"
-    }
+  "name": "vili",
+  "version": "0.0.0",
+  "description": "track time, gain willpower",
+  "main": "server.js",
+  "author": "zachfedor",
+  "license": "MIT",
+  "homepage": "http://vili.hickory.io",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:zachfedor/vili.git"
+  },
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.13.2",
+    "express": "^4.13.1",
+    "mongoose": "^4.0.7",
+    "morgan": "^1.6.1"
+  }
 }
