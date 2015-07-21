@@ -10,9 +10,38 @@ var express = require('express'),
     mongoose = require('mongoose'),
     port = process.env.PORT || 8080;
 
-mongoose.connect('mongodb://localhost:27017/vili');
+mongoose.connect('mongodb://127.0.0.1:27017/vili');
+
+var db = mongoose.connection;
+db.on('error', console.error.bind( console, 'connection error: '));
+db.once('open', function(cb) {
+    //yay
+});
 
 var User = require('./app/models/user.js');
+
+var newUser = User({
+    name: 'test2',
+    username: 'testname2',
+    password: 'password'
+});
+
+var exists = 0;
+User.find({ username: 'testname2' }, function(err, user) {
+    if (err) throw err;
+    exists = 1;
+
+    console.log( 'user already exists:');
+    console.log( user );
+
+});
+
+if (exists == 0) {
+    newUser.save( function(err) {
+        if (err) throw err;
+        console.log('new user created');
+    });
+}
 
 // App Configuration =====
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -47,6 +76,22 @@ apiRouter.use(function(req, res, next) {
 apiRouter.get('/', function(req, res) {
     res.json({ message: 'hooray!' });
 });
+
+apiRouter.route('/users')
+    .post(function(req, res) {
+        var user = new User();
+        user.name = req.body.name;
+        user.username = req.body.username;
+        user.password = req.body.password;
+
+        user.save(function(err) {
+            if (err) {
+                return res.send(err);
+            }
+
+            res.json({ message: 'User Created!' });
+        });
+    });
 
 // Register Routes =======
 app.use('/api', apiRouter);
@@ -101,3 +146,5 @@ app.use( '/api', apiRoutes );*/
 app.listen( port );
 
 console.log( 'Magic is happening on port ' + port );
+
+//console.log(mongoose.connection.readyState);

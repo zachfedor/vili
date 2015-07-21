@@ -9,7 +9,8 @@ var mongoose = require('mongoose'),
 
 // Schema =============
 var UserSchema = new Schema({
-    email: {
+    name: String,
+    username: {
         type: String,
         required: true,
         index: {
@@ -47,3 +48,5 @@ UserSchema.methods.comparePassword = function(password) {
 
 // Finalize
 module.exports = mongoose.model('User', UserSchema);
+
+//console.log(mongoose.connection.readyState);
