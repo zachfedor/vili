@@ -15,33 +15,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/vili');
 var db = mongoose.connection;
 db.on('error', console.error.bind( console, 'connection error: '));
 db.once('open', function(cb) {
-    //yay
+    console.log( 'database has connected' );
 });
 
 var User = require('./app/models/user.js');
-
-var newUser = User({
-    name: 'test2',
-    username: 'testname2',
-    password: 'password'
-});
-
-var exists = 0;
-User.find({ username: 'testname2' }, function(err, user) {
-    if (err) throw err;
-    exists = 1;
-
-    console.log( 'user already exists:');
-    console.log( user );
-
-});
-
-if (exists == 0) {
-    newUser.save( function(err) {
-        if (err) throw err;
-        console.log('new user created');
-    });
-}
 
 // App Configuration =====
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -78,18 +55,43 @@ apiRouter.get('/', function(req, res) {
 });
 
 apiRouter.route('/users')
+// create a user (accessed at POST http://localhost:8080/api/users)
     .post(function(req, res) {
         var user = new User();
-        user.name = req.body.name;
-        user.username = req.body.username;
+        user.email = req.body.email;
         user.password = req.body.password;
 
         user.save(function(err) {
             if (err) {
+                if (err.code == 11000) {
+                    return res.json({
+                        success: false,
+                        message: 'A user with that username already exists. '
+                    });
+                }
+
                 return res.send(err);
             }
 
             res.json({ message: 'User Created!' });
+        });
+    })
+
+// get all users (accessed at GET http://localhost:8080/api/users)
+    .get(function(req, res) {
+        User.find(function(err, users) {
+            if (err) res.send(err);
+
+            res.json(users);
+        });
+    });
+
+apiRouter.route('/users/:user_id')
+    .get(function(req, res) {
+        User.findById(req.params.user_id, function(err, user) {
+            if (err) res.send(err);
+
+            res.json(user);
         });
     });
 
