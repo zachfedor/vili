@@ -9,8 +9,7 @@ var mongoose = require('mongoose'),
 
 // Schema =============
 var UserSchema = new Schema({
-    name: String,
-    username: {
+    email: {
         type: String,
         required: true,
         index: {
