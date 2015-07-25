@@ -93,6 +93,27 @@ apiRouter.route('/users/:user_id')
 
             res.json(user);
         });
+    })
+    .put(function(req, res) {
+        User.findById(req.params.user_id, function(err, user) {
+            if (err) res.send(err);
+
+            if (req.body.email) user.email = req.body.email;
+            if (req.body.password) user.password = req.body.password;
+
+            user.save(function(err) {
+                if (err) res.send(err);
+
+                res.json({ message: 'User updated!' });
+            });
+        });
+    })
+    .delete(function(req, res) {
+        User.remove({ _id: req.params.user_id }, function(err, user) {
+            if (err) return res.send(err);
+
+            res.json({ message: 'Successfully deleted' });
+        });
     });
 
 // Register Routes =======
