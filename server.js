@@ -6,17 +6,24 @@
 var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
+    jwt = require('jsonwebtoken'),
     morgan = require('morgan'),
     mongoose = require('mongoose'),
     port = process.env.PORT || 8080;
 
 mongoose.connect('mongodb://127.0.0.1:27017/vili');
 
+// authorization
+var secret = 'ilovescotchscotchyscotchscotch';
+
+/*
+// mongoose debugging
 var db = mongoose.connection;
 db.on('error', console.error.bind( console, 'connection error: '));
 db.once('open', function(cb) {
     console.log( 'database has connected' );
 });
+*/
 
 var User = require('./app/models/user.js');
 
@@ -35,12 +42,52 @@ app.use(function(req, res, next) {
 app.use(morgan('dev'));
 
 // Routes ================
+// basic route
 app.get('/', function(req, res) {
     // res.sendFile( path.join( __dirname + '/public/index.html' ));
     res.send('Welcome to the Home Page!');
 });
 
+// api route
 var apiRouter = express.Router();
+
+apiRouter.post('/authenticate', function(req, res) {
+    User.findOne({
+        email: req.body.email
+    })
+        .select('email password')
+        .exec(function(err, user) {
+            if (err) throw err;
+
+            if (!user) {
+                res.json({
+                    success: false,
+                    message: 'Authentication failed. Email not found.'
+                });
+            } else if (user) {
+                var validPassword = user.comparePassword(req.body.password);
+
+                if (!validPassword) {
+                    res.json({
+                        success: false,
+                        message: 'Authentication failed. Wrong password.'
+                    });
+                } else {
+                    var token = jwt.sign({
+                        email: user.email
+                    }, secret, {
+                        expiresInMinutes: 1440
+                    });
+
+                    res.json({
+                        success: true,
+                        message: 'Enjoy your token!',
+                        token: token
+                    });
+                }
+            }
+        });
+});
 
 apiRouter.use(function(req, res, next) {
     console.log('somebody is using our app!');
