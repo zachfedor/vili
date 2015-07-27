@@ -9,9 +9,8 @@ var express = require('express'),
     jwt = require('jsonwebtoken'),
     morgan = require('morgan'),
     mongoose = require('mongoose'),
+    User = require('./app/models/user.js'),
     port = process.env.PORT || 8080;
-
-mongoose.connect('mongodb://127.0.0.1:27017/vili');
 
 // authorization
 var secret = 'ilovescotchscotchyscotchscotch';
@@ -25,7 +24,6 @@ db.once('open', function(cb) {
 });
 */
 
-var User = require('./app/models/user.js');
 
 // App Configuration =====
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,12 +32,14 @@ app.use(bodyParser.json());
 app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, \Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
 
     next();
 });
 
 app.use(morgan('dev'));
+
+mongoose.connect('mongodb://127.0.0.1:27017/vili');
 
 // Routes ================
 // basic route
@@ -54,47 +54,68 @@ var apiRouter = express.Router();
 apiRouter.post('/authenticate', function(req, res) {
     User.findOne({
         email: req.body.email
-    })
-        .select('email password')
-        .exec(function(err, user) {
-            if (err) throw err;
+    }).select('email password').exec(function(err, user) {
+        if (err) throw err;
 
-            if (!user) {
+        if (!user) {
+            res.json({
+                success: false,
+                message: 'Authentication failed. Email not found.'
+            });
+        } else if (user) {
+            var validPassword = user.comparePassword(req.body.password);
+
+            if (!validPassword) {
                 res.json({
                     success: false,
-                    message: 'Authentication failed. Email not found.'
+                    message: 'Authentication failed. Wrong password.'
                 });
-            } else if (user) {
-                var validPassword = user.comparePassword(req.body.password);
+            } else {
+                var token = jwt.sign({
+                    email: user.email
+                }, secret, {
+                    expiresInMinutes: 1440
+                });
 
-                if (!validPassword) {
-                    res.json({
-                        success: false,
-                        message: 'Authentication failed. Wrong password.'
-                    });
-                } else {
-                    var token = jwt.sign({
-                        email: user.email
-                    }, secret, {
-                        expiresInMinutes: 1440
-                    });
-
-                    res.json({
-                        success: true,
-                        message: 'Enjoy your token!',
-                        token: token
-                    });
-                }
+                res.json({
+                    success: true,
+                    message: 'Enjoy your token!',
+                    token: token
+                });
             }
-        });
+        }
+    });
 });
 
+// middleware
 apiRouter.use(function(req, res, next) {
     console.log('somebody is using our app!');
 
-    // more later
+    if (req.body.token) console.log('body token');
+    if (req.query.token) console.log('params token');
+    if (req.headers['x-access-token']) console.log('headers token');
 
-    next();
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+    if (token) {
+        jwt.verify(token, secret, function(err, decoded) {
+            if (err) {
+                return res.status(403).send({
+                    success: false,
+                    message: 'Failed to authenticate token.'
+                });
+            } else {
+                req.decoded = decoded;
+
+                next();
+            }
+        });
+    } else {
+        return res.status(403).send({
+            success: false,
+            message: 'No token provided.'
+        });
+    }
 });
 
 apiRouter.get('/', function(req, res) {
@@ -162,6 +183,10 @@ apiRouter.route('/users/:user_id')
             res.json({ message: 'Successfully deleted' });
         });
     });
+
+apiRouter.get('/me', function(req, res) {
+    res.send(req.decoded);
+});
 
 // Register Routes =======
 app.use('/api', apiRouter);
