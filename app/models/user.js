@@ -28,24 +28,26 @@ var UserSchema = new Schema({
 UserSchema.pre('save', function(next) {
     var user = this;
 
+    // only hash if the password is new or modified
     if (!user.isModified('password')) return next();
 
+    // generate the hash
     bcrypt.hash(user.password, null, null, function(err, hash) {
         if (err) return next(err);
 
+        // save the hash
         user.password = hash;
+
         next();
     });
 });
 
-// compare the password to it's hash
+// compare the password to it's hash in the database
 UserSchema.methods.comparePassword = function(password) {
     var user = this;
 
     return bcrypt.compareSync(password, user.password);
 };
 
-// Finalize
+// Finalize =============
 module.exports = mongoose.model('User', UserSchema);
-
-//console.log(mongoose.connection.readyState);
