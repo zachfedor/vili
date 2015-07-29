@@ -1,0 +1,14 @@
+/**
+ * style.css
+ */
+
+main {
+    padding-top: 30px;
+}
+
+/**
+ * header
+ */
+header .navbar {
+    boder-radius: 0;
+}
