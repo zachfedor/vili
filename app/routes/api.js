@@ -168,6 +168,11 @@ module.exports = function(app, express) {
             });
         });
 
+    // api endpoint to get user info
+    apiRouter.get('/me', function(req, res) {
+        res.send(req.decoded);
+    });
+
     return apiRouter;
 
 };

@@ -1,33 +1,29 @@
-// name the app
-angular.module('vili', [])
+/**
+ * app.js
+ */
 
-    .controller('mainController', function() {
+// name the app
+angular.module('vili', ['stuffService'])
+
+    // inject $http into controller
+    .controller('mainController', function($http) {
         // bind this to vm (view-model)
         var vm = this;
-
         // define variables and objects on this
         // this lets them be available to our views
 
-        // define a basic variable
-        vm.message = 'Hey there! Come and see how good I look.';
-
-        // define a list of items
-        vm.computers = [
-            { name: 'Macbook Pro', color: 'Silver', nerdness: 7 },
-            { name: 'Yoga 2 Pro', color: 'Gray', nerdness: 6 },
-            { name: 'Chromebook', color: 'Black', nerdness: 5 },
-        ];
-
-        // function and variable to add to computer list
-        vm.computerData = {};
-
-        vm.addComputer = function() {
-            vm.computers.push({
-                name: vm.computerData.name,
-                color: vm.computerData.color,
-                nerdness: vm.computerData.nerdness
+        // make the API call
+        $http.get('/api/users')
+            .then(function(data) {
+                // bind the users we receive to vm.users
+                vm.users = data.users;
             });
+    })
+    .controller('userController', function(Stuff) {
+        var vm = this;
 
-            vm.computerData = {};
-        };
+        Stuff.all()
+            .success(function(data) {
+                vm.stuff = data;
+            });
     });
