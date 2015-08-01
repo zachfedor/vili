@@ -22,10 +22,18 @@ angular.module('mainCtrl', [])
 
         // function to handle login form
         vm.doLogin = function() {
+            vm.processing = true;
+            vm.error = '';
+
             // call the Auth.login function
             Auth.login(vm.loginData.email, vm.loginData.password)
                 .success(function(data) {
-                    $location.path('/users');
+                    vm.processing = false;
+                    if (data.success) {
+                        $location.path('/users');
+                    } else {
+                        vm.error = data.message;
+                    }
                 });
         };
 
