@@ -1,0 +1,19 @@
+<div class="jumbotron text-center">
+    <h1>Welcome to vili</h1>
+
+    <div ng-if="!main.loggedIn">
+        <p>
+            Login to manage your users.
+        </p>
+
+        <a class="btn btn-primary" href="/login">Login</a>
+    </div>
+
+    <div ng-if="main.loggedIn">
+        <p>
+            Manage your users.
+        </p>
+
+        <a class="btn btn-primary" href="/users">View Users</a>
+    </div>
+</div>

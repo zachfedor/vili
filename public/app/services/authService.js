@@ -14,6 +14,8 @@ angular.module('authService', [])
 
         // handle login
         authFactory.login = function(email, password) {
+            // console.log('logging in');
+
             return $http.post('/api/authenticate', {
                 email: email,
                 password: password
@@ -26,6 +28,8 @@ angular.module('authService', [])
 
         // handle logout
         authFactory.logout = function() {
+            // console.log('logging out');
+
             // clear the token
             AuthToken.setToken();
         };
@@ -33,9 +37,12 @@ angular.module('authService', [])
         // check if user is logged in
         authFactory.isLoggedIn = function() {
             if (AuthToken.getToken()) {
+                // console.log('login check: true');
+
                 return true;
-            }
-            else {
+            } else {
+                // console.log('login check: false');
+
                 return false;
             }
         };
@@ -59,6 +66,9 @@ angular.module('authService', [])
 
         // get the token
         authTokenFactory.getToken = function() {
+            // console.log('trying to get the token');
+
+            // console.log( $window.localStorage.getItem('token') );
             return $window.localStorage.getItem('token');
         };
 
@@ -80,11 +90,17 @@ angular.module('authService', [])
 
         // attach the token to requests
         interceptorFactory.request = function(config) {
+            // console.log('interceptor is getting the token');
+
             // grab the token
-            var token = AuthToken.getToken;
+            var token = AuthToken.getToken();
+
+            // console.log('interceptor got: ' + token);
 
             // add token to header if it exists
             if (token) {
+                // console.log('token exists, adding it to header');
+
                 config.headers['x-access-token'] = token;
             }
 
@@ -95,6 +111,8 @@ angular.module('authService', [])
         interceptorFactory.responseError = function(response) {
             // if server responds in 403 forbidden access
             if (response.status == 403) {
+                // console.log('forbidden access, redirect to login page');
+
                 AuthToken.setToken();
                 $location.path('/login');
             }

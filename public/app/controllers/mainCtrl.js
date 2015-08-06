@@ -16,7 +16,7 @@ angular.module('mainCtrl', [])
             // get user info on route change
             Auth.getUser()
                 .then(function(data) {
-                    vm.user = data;
+                    vm.user = data.data;
                 });
         });
 
@@ -42,7 +42,12 @@ angular.module('mainCtrl', [])
             Auth.logout();
 
             // reset user info
-            vm.user = {};
+            vm.user = '';
+
             $location.path('/login');
+        };
+
+        vm.createSample = function() {
+            Auth.createSampleUser();
         };
     });

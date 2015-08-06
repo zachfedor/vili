@@ -3,7 +3,8 @@
  */
 
 // Setup ===================
-var User = require('../models/user'),
+var bodyParser = require('body-parser'),
+    User = require('../models/user'),
     jwt = require('jsonwebtoken'),
     config = require('../../config');
 
@@ -15,7 +16,7 @@ module.exports = function(app, express) {
 
     // to authenticate a user (POST http://localhost:8080/api/authenticate)
     apiRouter.post('/authenticate', function(req, res) {
-        console.log(req.body.email);
+        console.log('post to authenticate');
 
         // find the user
         User.findOne({
@@ -74,6 +75,8 @@ module.exports = function(app, express) {
                 } else {
                     // verified token is saved to request for use in other routes
                     req.decoded = decoded;
+
+                    next();
                 }
             });
         } else {
@@ -83,8 +86,6 @@ module.exports = function(app, express) {
                 message: 'No token provided.'
             });
         }
-
-        next();
     });
 
     // access at GET http://localhost:8080/api
@@ -104,6 +105,7 @@ module.exports = function(app, express) {
 
             user.save(function(err) {
                 if (err) {
+                    console.log( err );
                     if (err.code == 11000) {
                         return res.json({
                             success: false,
@@ -120,7 +122,7 @@ module.exports = function(app, express) {
 
         // get all users (accessed at GET http://localhost:8080/api/users)
         .get(function(req, res) {
-            User.find(function(err, users) {
+            User.find({}, function(err, users) {
                 if (err) res.send(err);
 
                 // return the users
