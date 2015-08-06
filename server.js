@@ -8,6 +8,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     morgan = require('morgan'),
     mongoose = require('mongoose'),
+    passport = require('passport'),
     config = require('./config'),
     path = require('path');
 
