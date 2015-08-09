@@ -1,6 +1,7 @@
 <div class="row col-sm-6 col-sm-offset-3">
     <div class="jumbotron">
-        <h1>Login</h1>
+        <h1 ng-if="login.type == 'main'">Login</h1>
+        <h1 ng-if="login.type == 'signup'">Sign Up</h1>
 
         <form ng-submit="login.doLogin()">
             <div class="form-group">
@@ -13,12 +14,18 @@
                 <input class="form-control" name="password" id="password" type="text" ng-model="login.loginData.password"/>
             </div>
 
+            <div class="form-group" ng-if="login.type == 'signup'">
+                <label for="passwordVerify">Confirm Password</label>
+                <input class="form-control" name="passwordVerify" id="passwordVerify" type="text" ng-model="login.loginData.passwordVerify"/>
+            </div>
+
             <div class="alert alert-danger" ng-if="login.error">
                 {{ login.error }}
             </div>
 
             <button type="submit" class="btn btn-block btn-primary">
-                <span ng-if="!login.processing">Login</span>
+                <span ng-if="!login.processing && login.type == 'main'">Login</span>
+                <span ng-if="!login.processing && login.type == 'signup'">Sign Up</span>
 
                 <span ng-if="login.processing" class="spinner">
                     <span class="glyphicon glyphicon-repeat"></span>
