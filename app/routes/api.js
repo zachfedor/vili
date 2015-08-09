@@ -14,6 +14,33 @@ module.exports = function(app, express) {
     // api route
     var apiRouter = express.Router();
 
+    // to register a new sign up (POST http://localhost:8080/api/signup)
+    apiRouter.post('/signup', function(req, res) {
+        console.log('registering a newb');
+
+        // create new instance of User model
+        var user = new User();
+        // set the data from the request
+        user.email = req.body.email;
+        user.password = req.body.password;
+
+        user.save(function(err) {
+            if (err) {
+                console.log( err );
+                if (err.code == 11000) {
+                    return res.json({
+                        success: false,
+                        message: 'Sign up failed. Email is already in use.'
+                    });
+                } else {
+                    return res.send(err);
+                }
+            }
+
+            res.json({ message: 'User has signed in!' });
+        });
+    });
+
     // to authenticate a user (POST http://localhost:8080/api/authenticate)
     apiRouter.post('/authenticate', function(req, res) {
         console.log('post to authenticate');
@@ -91,6 +118,21 @@ module.exports = function(app, express) {
     // access at GET http://localhost:8080/api
     apiRouter.get('/', function(req, res) {
         res.json({ message: 'hooray!' });
+    });
+
+    // create sample user
+    apiRouter.get('/setup', function(req, res) {
+        var test = new User({
+            email: 'test@example.com',
+            password: 'password'
+        });
+
+        test.save(function(err) {
+            if (err) throw err;
+
+            console.log('Test User saved successfully');
+            res.json({ success: true });
+        });
     });
 
     // for routes ending in /users
