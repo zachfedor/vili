@@ -5,6 +5,7 @@
 // Setup ===================
 var bodyParser = require('body-parser'),
     User = require('../models/user'),
+    Project = require('../models/project.js'),
     jwt = require('jsonwebtoken'),
     config = require('../../config');
 
@@ -134,6 +135,33 @@ module.exports = function(app, express) {
             res.json({ success: true });
         });
     });
+
+    // for routes ending in /projects
+    apiRouter.route('/projects')
+        // create a project (accessed at POST http://localhost:8080/api/projects)
+        .post(function(req, res) {
+            // create a new instance of Project model
+            var project = new Project();
+            // set the data from the request
+            project.name = req.body.name;
+            project.user_id = req.body.user_id;
+
+            project.save(function(err) {
+                if (err) {
+                    console.log(err);
+                    if (err.code == 11000) {
+                        return res.json({
+                            success: false,
+                            message: 'A project with that name already exists.'
+                        });
+                    } else {
+                        return res.send(err);
+                    }
+                }
+
+                res.json({ message: 'Project Created!' });
+            });
+        });
 
     // for routes ending in /users
     apiRouter.route('/users')
