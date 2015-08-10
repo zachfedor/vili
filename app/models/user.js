@@ -21,10 +21,7 @@ var UserSchema = new Schema({
         required: true,
         select: false
     },
-    verified: Boolean,
-    projects: [{
-        name: String
-    }]
+    verified: Boolean
 });
 
 // Password =============
