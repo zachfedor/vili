@@ -49,7 +49,7 @@ module.exports = function(app, express) {
         // find the user
         User.findOne({
             email: req.body.email
-        }).select('email password').exec(function(err, user) {
+        }).select('_id email password').exec(function(err, user) {
             if (err) throw err;
 
             // there is no such user
@@ -70,7 +70,8 @@ module.exports = function(app, express) {
                 } else {
                     // user and password check out
                     var token = jwt.sign({
-                        email: user.email
+                        email: user.email,
+                        _id: user._id
                     }, secret, {
                         // expires in 24 hours
                         expiresInMinutes: 1440
@@ -144,7 +145,8 @@ module.exports = function(app, express) {
             var project = new Project();
             // set the data from the request
             project.name = req.body.name;
-            project.user_id = req.body.user_id;
+            project.user_id = req.decoded._id;
+            project.unique_name = req.decoded._id + '_' + req.body.name;
 
             project.save(function(err) {
                 if (err) {
@@ -160,6 +162,16 @@ module.exports = function(app, express) {
                 }
 
                 res.json({ message: 'Project Created!' });
+            });
+        })
+
+        // get all projects for a user (accessed at GET http://localhost:8080/api/projects)
+        .get(function(req, res) {
+            Project.find({ user_id: req.decoded._id }, 'name unique_name', function(err, projects) {
+                if (err) res.send(err);
+
+                // return the projects
+                res.json(projects);
             });
         });
 
