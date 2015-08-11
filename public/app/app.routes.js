@@ -24,6 +24,27 @@ angular.module('app.routes', ['ngRoute'])
                 controllerAs: 'login'
             })
 
+            // display all projects route
+            .when('/projects', {
+                templateUrl: 'app/views/pages/projects/all.html',
+                controller: 'projectController',
+                controllerAs: 'project'
+            })
+
+            // create single project route
+            .when('/projects/create', {
+                templateUrl: 'app/views/pages/projects/single.html',
+                controller: 'projectCreateController',
+                controllerAs: 'project'
+            })
+
+            // display single project route
+            .when('/project/:project_id', {
+                templateUrl: 'app/views/pages/projects/single.html',
+                controller: 'projectEditController',
+                controllerAs: 'project'
+            })
+
             // display users route
             .when('/users', {
                 templateUrl: 'app/views/pages/users/all.html',
