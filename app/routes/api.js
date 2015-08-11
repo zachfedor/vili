@@ -1,8 +1,16 @@
 /**
  * api.js
+ *
+ * = TOC =
+ * - Setup
+ * - Auth Routes
+ * - Middleware
+ * - General Routes
+ * - Project Routes
+ * - User Routes
  */
 
-// Setup ===================
+// Setup ====================================
 var bodyParser = require('body-parser'),
     User = require('../models/user'),
     Project = require('../models/project.js'),
@@ -15,6 +23,7 @@ module.exports = function(app, express) {
     // api route
     var apiRouter = express.Router();
 
+// Auth Routes =========================================================
     // to register a new sign up (POST http://localhost:8080/api/signup)
     apiRouter.post('/signup', function(req, res) {
         console.log('registering a newb');
@@ -87,6 +96,7 @@ module.exports = function(app, express) {
         });
     });
 
+// Middleware ==========================
     // middleware to verify token
     apiRouter.use(function(req, res, next) {
         console.log('somebody is using our app!');
@@ -117,6 +127,7 @@ module.exports = function(app, express) {
         }
     });
 
+// General Routes ===============================
     // access at GET http://localhost:8080/api
     apiRouter.get('/', function(req, res) {
         res.json({ message: 'hooray!' });
@@ -137,6 +148,7 @@ module.exports = function(app, express) {
         });
     });
 
+// Project Routes ===============================
     // for routes ending in /projects
     apiRouter.route('/projects')
         // create a project (accessed at POST http://localhost:8080/api/projects)
@@ -175,6 +187,7 @@ module.exports = function(app, express) {
             });
         });
 
+// User Routes ===============================
     // for routes ending in /users
     apiRouter.route('/users')
         // create a user (accessed at POST http://localhost:8080/api/users)
