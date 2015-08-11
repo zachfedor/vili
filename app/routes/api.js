@@ -33,6 +33,7 @@ module.exports = function(app, express) {
         // set the data from the request
         user.email = req.body.email;
         user.password = req.body.password;
+        user.created = Date.now();
 
         user.save(function(err) {
             if (err) {
@@ -232,6 +233,7 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err) res.send(err);
 
+                console.log(user.created);
                 // return that user
                 res.json(user);
             });

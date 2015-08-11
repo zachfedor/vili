@@ -21,6 +21,10 @@ var UserSchema = new Schema({
         required: true,
         select: false
     },
+    created: {
+        type: Date,
+        required: true
+    },
     verified: Boolean
 });
 
