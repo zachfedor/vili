@@ -8,6 +8,8 @@ angular.module('vili', [
     'app.routes',
     'authService',
     'mainCtrl',
+    'projectCtrl',
+    'projectService',
     'userCtrl',
     'userService'
 ])
