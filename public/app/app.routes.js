@@ -39,7 +39,7 @@ angular.module('app.routes', ['ngRoute'])
             })
 
             // display single project route
-            .when('/project/:project_id', {
+            .when('/projects/:project_id', {
                 templateUrl: 'app/views/pages/projects/single.html',
                 controller: 'projectEditController',
                 controllerAs: 'project'
