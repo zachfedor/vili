@@ -1,0 +1,29 @@
+<div class="page-header">
+    <h1 ng-if="project.type == 'create'">Create Project</h1>
+    <h1 ng-if="project.type == 'edit'">Edit Project</h1>
+</div>
+
+<form class="form-horizontal" ng-submit="project.saveProject()">
+    <div class="form-group">
+        <label class="col-sm-2 control-label" for="name">Name</label>
+
+        <div class="col-sm-6">
+            <input class="form-control" name="name" type="text" ng-model="project.projectData.name"/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-6">
+            <button class="btn btn-success btn-lg btn-block" ng-if="project.type == 'create'">Create Project</button>
+            <button class="btn btn-success btn-lg btn-block" ng-if="project.type == 'edit'">Update Project</button>
+        </div>
+    </div>
+</form>
+
+<div class="row show-hide-message" ng-show="project.message">
+    <div class="col-sm-6 col-sm-offset-2">
+        <div class="alert alert-info">
+            {{ project.message }}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+<div class="page-header">
+    <h1>
+        Projects
+
+        <a class="btn btn-default" href="/projects/create">
+            <span class="glyphicon glyphicon-plus"></span>
+            New Project
+        </a>
+    </h1>
+</div>
+
+<!-- loading message -->
+<div class="jumbotron text-center" ng-show="project.processing">
+    <span class="glyphicon glyphicon-repeat spinner"></span>
+
+    <p>
+        Loading Projects...
+    </p>
+</div>
+
+<table class="table table-bordered table-striped" ng-show="project.projects">
+    <thead>
+        <tr>
+            <th>_id</th>
+            <th>Name</th>
+            <th class="col-sm-2"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- loop over the projects -->
+        <tr ng-repeat="item in project.projects">
+            <td>{{ item._id }}</td>
+            <td>{{ item.name }}</td>
+            <td class="col-sm-2">
+                <a class="btn btn-danger" ng-href="/projects/{{ item._id }}">Edit</a>
+                <a class="btn btn-primary" href="#" ng-click="project.deleteProject(item._id)">Delete</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
