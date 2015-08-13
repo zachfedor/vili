@@ -190,6 +190,104 @@ module.exports = function(app, express) {
 
     // for routes ending in /projects/:project_id
     apiRouter.route('/projects/:project_id')
+        // get this project
+        .get(function(req, res) {
+            Project.findById(req.params.project_id, function(err, project) {
+                if (err) res.send(err);
+
+                // return the project
+                res.json(project);
+            });
+        })
+
+        // toggle the timer for this project
+        .put(function(req, res) {
+            Project.findById(req.params.project_id, function(err, project) {
+                if (err) res.send(err);
+
+                // check for running timer
+                var timer_running = false;
+                var last_timer = project.times[ project.times.length - 1 ];
+
+                if (last_timer) {
+                    // time exists
+                    if (!last_timer.end) {
+                        // time exists and is running
+                        timer_running = true;
+                    }
+                }
+
+                if (timer_running) {
+                    last_timer.end = Date.now();
+                    last_timer.total = last_timer.end - last_timer.start;
+
+                    console.log( 'start: ' + last_timer.start );
+                    console.log( 'end: ' + last_timer.end );
+                    console.log( 'total: ' + last_timer.total );
+
+                    project.save(function(err) {
+                        if (err) return res.send(err);
+
+                        res.json({
+                            success: true,
+                            message: 'Timer stopped.'
+                        });
+                    });
+                } else {
+                    // start timer
+                    project.times.push({
+                        start: Date.now()
+                    });
+
+                    project.save(function(err) {
+                        if (err) return res.send(err);
+
+                        res.json({
+                            success: true,
+                            message: 'Timer started'
+                        });
+                    });
+                }
+            });
+        })
+
+        // delete/cancel the timer for this project
+        .delete(function(req, res) {
+            Project.findById(req.params.project_id, function(err, project) {
+                if (err) res.send(err);
+
+                // check for running timer
+                var last_timer = project.times[ project.times.length - 1 ];
+                if (!last_timer) {
+                    // there is no timer for this project yet
+                    return res.json({
+                        success: false,
+                        message: 'This project hasn\'t been timed yet.'
+                    });
+                } else if (last_timer.end) {
+                    // the last timer has ended
+                    return res.json({
+                        success: false,
+                        message: 'There is no timer running to cancel.'
+                    });
+                } else {
+                    // delete last time
+                    project.times.pop();
+
+                    project.save(function(err) {
+                        if (err) return res.send(err);
+
+                        res.json({
+                            success: true,
+                            message: 'Timer cancelled.'
+                        });
+                    });
+                }
+            });
+        });
+
+    // for routes ending in /projects/edit/:project_id
+    apiRouter.route('/projects/edit/:project_id')
         // get the project with this id
         .get(function(req, res) {
             Project.findById(req.params.project_id, function(err, project) {
