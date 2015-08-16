@@ -135,24 +135,19 @@ module.exports = function(app, express) {
         res.json({ message: 'hooray!' });
     });
 
-    // create sample user
-    apiRouter.get('/setup', function(req, res) {
-        var test = new User({
-            email: 'test@example.com',
-            password: 'password'
-        });
-
-        test.save(function(err) {
-            if (err) throw err;
-
-            console.log('Test User saved successfully');
-            res.json({ success: true });
-        });
-    });
-
 // Project Routes ===============================
     // for routes ending in /projects
     apiRouter.route('/projects')
+        // get all projects for a user (accessed at GET http://localhost:8080/api/projects)
+        .get(function(req, res) {
+            Project.find({ user_id: req.decoded._id }, 'name unique_name', function(err, projects) {
+                if (err) res.send(err);
+
+                // return the projects
+                res.json(projects);
+            });
+        })
+
         // create a project (accessed at POST http://localhost:8080/api/projects)
         .post(function(req, res) {
             // create a new instance of Project model
@@ -176,16 +171,6 @@ module.exports = function(app, express) {
                 }
 
                 res.json({ message: 'Project Created!' });
-            });
-        })
-
-        // get all projects for a user (accessed at GET http://localhost:8080/api/projects)
-        .get(function(req, res) {
-            Project.find({ user_id: req.decoded._id }, 'name unique_name', function(err, projects) {
-                if (err) res.send(err);
-
-                // return the projects
-                res.json(projects);
             });
         });
 
