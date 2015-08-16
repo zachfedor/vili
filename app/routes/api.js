@@ -7,6 +7,7 @@
  * - Middleware
  * - General Routes
  * - Project Routes
+ * - Timer Routes
  * - User Routes
  */
 
@@ -190,6 +191,58 @@ module.exports = function(app, express) {
 
     // for routes ending in /projects/:project_id
     apiRouter.route('/projects/:project_id')
+        // get the project with this id
+        .get(function(req, res) {
+            Project.findById(req.params.project_id, function(err, project) {
+                if (err) res.send(err);
+
+                // return that project
+                res.json(project);
+            });
+        })
+
+        // update the project with this id
+        .put(function(req, res) {
+            Project.findById(req.params.project_id, function(err, project) {
+                if (err) res.send(err);
+
+                // set the new project name if it exists in the request
+                if (req.body.name) {
+                    project.name = req.body.name;
+                    project.unique_name = req.decoded._id + "_" + req.body.name;
+                }
+
+                project.save(function(err) {
+                    if (err) {
+                        if (err.code == 11000) {
+                            return res.json({
+                                success: false,
+                                message: 'A project with that name already exists. '
+                            });
+                        } else {
+                            return res.send(err);
+                        }
+                    }
+
+                    // return confirmation message
+                    res.json({ message: 'Project updated!' });
+                });
+            });
+        })
+
+        // delete the project with this id
+        .delete(function(req, res) {
+            Project.remove({ _id: req.params.project_id }, function(err, project) {
+                if (err) return res.send(err);
+
+                // return confirmation message
+                res.json({ message: 'Successfully deleted' });
+            });
+        });
+
+// Timer Routes ===============================
+    // for routes ending in /timer/:project_id
+    apiRouter.route('/timer/:project_id')
         // get this project
         .get(function(req, res) {
             Project.findById(req.params.project_id, function(err, project) {
@@ -283,57 +336,6 @@ module.exports = function(app, express) {
                         });
                     });
                 }
-            });
-        });
-
-    // for routes ending in /projects/edit/:project_id
-    apiRouter.route('/projects/edit/:project_id')
-        // get the project with this id
-        .get(function(req, res) {
-            Project.findById(req.params.project_id, function(err, project) {
-                if (err) res.send(err);
-
-                // return that project
-                res.json(project);
-            });
-        })
-
-        // update the project with this id
-        .put(function(req, res) {
-            Project.findById(req.params.project_id, function(err, project) {
-                if (err) res.send(err);
-
-                // set the new project name if it exists in the request
-                if (req.body.name) {
-                    project.name = req.body.name;
-                    project.unique_name = req.decoded._id + "_" + req.body.name;
-                }
-
-                project.save(function(err) {
-                    if (err) {
-                        if (err.code == 11000) {
-                            return res.json({
-                                success: false,
-                                message: 'A project with that name already exists. '
-                            });
-                        } else {
-                            return res.send(err);
-                        }
-                    }
-
-                    // return confirmation message
-                    res.json({ message: 'Project updated!' });
-                });
-            });
-        })
-
-        // delete the project with this id
-        .delete(function(req, res) {
-            Project.remove({ _id: req.params.project_id }, function(err, project) {
-                if (err) return res.send(err);
-
-                // return confirmation message
-                res.json({ message: 'Successfully deleted' });
             });
         });
 
