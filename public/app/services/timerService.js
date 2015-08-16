@@ -3,7 +3,7 @@
  */
 
 angular.module('timerService', [])
-    .factory('Project', function($http) {
+    .factory('Timer', function($http) {
         var timerFactory = {};
 
         // get a single project
@@ -12,12 +12,12 @@ angular.module('timerService', [])
         };
 
         // toggle timer on project
-        timerFactory.put = function(id) {
+        timerFactory.toggle = function(id) {
             return $http.put('/api/timer/' + id);
         };
 
         // cancel timer on project
-        timerFactory.delete = function(id) {
+        timerFactory.cancel = function(id) {
             return $http.delete('/api/timer/' +id);
         };
     });
