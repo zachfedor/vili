@@ -6,11 +6,6 @@ angular.module('projectService', [])
     .factory('Project', function($http) {
         var projectFactory = {};
 
-        // get a single project
-        projectFactory.get = function(id) {
-            return $http.get('/api/projects/' + id);
-        };
-
         // get all projects
         projectFactory.all = function() {
             return $http.get('/api/projects/');
@@ -19,6 +14,11 @@ angular.module('projectService', [])
         // create a project
         projectFactory.create = function(projectData) {
             return $http.post('/api/projects/', projectData);
+        };
+
+        // get a single project
+        projectFactory.get = function(id) {
+            return $http.get('/api/projects/' + id);
         };
 
         // update a project
