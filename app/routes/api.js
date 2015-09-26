@@ -29,6 +29,19 @@ module.exports = function(app, express) {
     apiRouter.post('/signup', function(req, res) {
         console.log('registering a newb');
 
+        // validating parameters
+        if (!req.body.email) {
+            return res.json({
+                success: false,
+                message: 'Sign up failed. Email is required.'
+            });
+        } else if (!req.body.password) {
+            return res.json({
+                success: false,
+                message: 'Sign up failed. Password is required.'
+            });
+        }
+
         // create new instance of User model
         var user = new User();
         // set the data from the request
@@ -49,7 +62,7 @@ module.exports = function(app, express) {
                 }
             }
 
-            res.json({ message: 'User has signed in!' });
+            res.json({ success: true, message: 'User has signed up!' });
         });
     });
 
@@ -57,9 +70,21 @@ module.exports = function(app, express) {
     apiRouter.post('/authenticate', function(req, res) {
         console.log('post to authenticate');
 
+        if (req.body.email) email = req.body.email;
+        else return res.json({
+            success: false,
+            message: 'Authentication failed. Email is required.'
+        });
+
+        if (req.body.password) password = req.body.password;
+        else return res.json({
+            success: false,
+            message: 'Authentication failed. Password is required.'
+        });
+
         // find the user
         User.findOne({
-            email: req.body.email
+            email: email
         }).select('_id email password').exec(function(err, user) {
             if (err) throw err;
 
@@ -70,7 +95,7 @@ module.exports = function(app, express) {
                     message: 'Authentication failed. Email not found.'
                 });
             } else if (user) {
-                var validPassword = user.comparePassword(req.body.password);
+                var validPassword = user.comparePassword(password);
 
                 // user exists but password doesn't match
                 if (!validPassword) {
@@ -140,7 +165,7 @@ module.exports = function(app, express) {
     apiRouter.route('/projects')
         // get all projects for a user (accessed at GET http://localhost:8080/api/projects)
         .get(function(req, res) {
-            Project.find({ user_id: req.decoded._id }, 'name unique_name', function(err, projects) {
+            Project.find({ user_id: req.decoded._id }, '_id name unique_name user_id', function(err, projects) {
                 if (err) res.send(err);
 
                 // return the projects
@@ -193,6 +218,8 @@ module.exports = function(app, express) {
 
                 // set the new project name if it exists in the request
                 if (req.body.name) {
+                    console.log(req.body.name);
+                    console.log(project);
                     project.name = req.body.name;
                     project.unique_name = req.decoded._id + "_" + req.body.name;
                 }
@@ -328,6 +355,7 @@ module.exports = function(app, express) {
     // for routes ending in /users
     apiRouter.route('/users')
         // create a user (accessed at POST http://localhost:8080/api/users)
+        /*
         .post(function(req, res) {
             // create new instance of User model
             var user = new User();
@@ -351,6 +379,7 @@ module.exports = function(app, express) {
                 res.json({ message: 'User Created!' });
             });
         })
+        */
 
         // get all users (accessed at GET http://localhost:8080/api/users)
         .get(function(req, res) {
@@ -397,6 +426,10 @@ module.exports = function(app, express) {
         .delete(function(req, res) {
             User.remove({ _id: req.params.user_id }, function(err, user) {
                 if (err) return res.send(err);
+
+                Project.remove({ user_id: req.params.user_id }, function(err, project) {
+                    if (err) return res.send(err)
+                });
 
                 // return confirmation message
                 res.json({ message: 'Successfully deleted' });
