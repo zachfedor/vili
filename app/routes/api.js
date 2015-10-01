@@ -146,8 +146,8 @@ module.exports = function(app, express) {
                 }
             });
         } else {
-            // send access forbidden if theres no token
-            return res.status(403).send({
+            // send 401 - Unauthorized if theres no token
+            return res.status(401).send({
                 success: false,
                 message: 'No token provided.'
             });
