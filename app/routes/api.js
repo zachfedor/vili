@@ -134,6 +134,7 @@ module.exports = function(app, express) {
         if (token) {
             jwt.verify(token, secret, function(err, decoded) {
                 if (err) {
+                    // send 403 - Forbidden if the token is wrong
                     return res.status(403).send({
                         success: false,
                         message: 'Failed to authenticate token.'
@@ -146,7 +147,7 @@ module.exports = function(app, express) {
                 }
             });
         } else {
-            // send 401 - Unauthorized if theres no token
+            // send 401 - Unauthorized if there's no token
             return res.status(401).send({
                 success: false,
                 message: 'No token provided.'
@@ -165,7 +166,7 @@ module.exports = function(app, express) {
     apiRouter.route('/projects')
         // get all projects for a user (accessed at GET http://localhost:8080/api/projects)
         .get(function(req, res) {
-            Project.find({ user_id: req.decoded._id }, '_id name unique_name user_id', function(err, projects) {
+            Project.find({ user_id: req.decoded._id }, 'name unique_name', function(err, projects) {
                 if (err) res.send(err);
 
                 // return the projects
@@ -218,8 +219,6 @@ module.exports = function(app, express) {
 
                 // set the new project name if it exists in the request
                 if (req.body.name) {
-                    console.log(req.body.name);
-                    console.log(project);
                     project.name = req.body.name;
                     project.unique_name = req.decoded._id + "_" + req.body.name;
                 }
@@ -427,12 +426,8 @@ module.exports = function(app, express) {
             User.remove({ _id: req.params.user_id }, function(err, user) {
                 if (err) return res.send(err);
 
-                Project.remove({ user_id: req.params.user_id }, function(err, project) {
-                    if (err) return res.send(err)
-                });
-
                 // return confirmation message
-                res.json({ message: 'Successfully deleted' });
+                res.json({ success: true, message: 'Successfully deleted.' });
             });
         });
 
