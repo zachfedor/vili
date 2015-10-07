@@ -4,6 +4,10 @@ var should = require('chai').should(),
     api = supertest('http://localhost:8080/api');
 
 describe('User', function() {
+    var user_email = 'email@test.com';
+    var user_pass = 'password';
+    var token, user_id;
+
     describe('Without Authentication', function() {
         it('should return 401 without token', function(done) {
             api.get('/users')
@@ -34,9 +38,6 @@ describe('User', function() {
     });
 
     describe('Signup', function() {
-        var user_email = 'email@test.com';
-        var user_pass = 'password';
-
         it('should return 403 without email', function(done) {
             api.post('/signup')
             .send({ email: '', password: user_pass })
@@ -79,7 +80,19 @@ describe('User', function() {
             });
         });
 
-        it('should return 500 on duplicate signup');
+        it('should return 500 on duplicate signup', function(done) {
+            api.post('/signup')
+            .send({ email: user_email, password: user_pass })
+            .set('Accept', 'application/json')
+            .expect(500)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(false);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("Sign up failed. Email is already in use.");
+                done();
+            })
+        });
 
         after('authenticate and delete new user', function(done) {
             cleanUser(user_email, user_pass, done);
@@ -87,37 +100,219 @@ describe('User', function() {
     });
 
     describe('Authentication', function() {
-        // before('signup user'); ???
+        before('signup user', function(done) {
+            api.post('/signup')
+            .send({ email: user_email, password: user_pass })
+            .set('Accept', 'application/json')
+            .expect(201)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(true);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("User has signed up!");
+                done();
+            });
+        });
 
-        it('should return 403 without email');
+        it('should return 403 without email', function(done) {
+            api.post('/authenticate')
+            .set('Accept', 'application/json')
+            .send({ email: "", password: user_pass })
+            .expect(403)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(false);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("Authentication failed. Email is required.");
+                done();
+            });
+        });
 
-        it('should return 403 without password');
+        it('should return 403 without password', function(done) {
+            api.post('/authenticate')
+            .set('Accept', 'application/json')
+            .send({ email: user_email, password: "" })
+            .expect(403)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(false);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("Authentication failed. Password is required.");
+                done();
+            });
+        });
 
-        it('should return 403 if email isn\'t found');
+        it("should return 403 if email isn't found", function(done) {
+            api.post('/authenticate')
+            .set('Accept', 'application/json')
+            .send({ email: "somestringthatshouldntexist@email.com", password: user_pass })
+            .expect(403)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(false);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("Authentication failed. Email not found.");
+                done();
+            });
+        });
 
-        it('should return 403 if password doesn\t match');
+        it("should return 403 if password doesn't match", function(done) {
+            api.post('/authenticate')
+            .set('Accept', 'application/json')
+            .send({ email: user_email, password: "bad_password" })
+            .expect(403)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(false);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("Authentication failed. Wrong password.");
+                done();
+            });
+        });
 
-        // after('authenticate and delete user');
+        it("should retun 200 with proper credentials", function(done) {
+            api.post('/authenticate')
+            .set('Accept', 'application/json')
+            .send({ email: user_email, password: user_pass })
+            .expect(200)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(true);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("Enjoy your token!");
+                expect(res.body).to.have.property("token");
+                expect(res.body.token).to.be.a("string");
+                done();
+            });
+        })
+
+        after('authenticate and delete user', function(done) {
+            cleanUser(user_email, user_pass, done);
+        });
     });
 
-    describe('Base Routes', function() {
-        // before('signup and authenticate new user');
+    describe('Routes', function() {
+        var deleted = false;
 
-        it('should return 200 with proper authentication');
+        before('signup and authenticate new user', function(done) {
+            api.post('/signup')
+            .send({ email: user_email, password: user_pass })
+            .set('Accept', 'application/json')
+            .expect(201)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(true);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("User has signed up!");
 
-        // after('authenticate and delete new user');
-    });
+                api.post('/authenticate')
+                .set('Accept', 'application/json')
+                .send({ email: user_email, password: user_pass })
+                .expect(200)
+                .end(function(err, res) {
+                    expect(res.body).to.have.property("success");
+                    expect(res.body.success).to.equal(true);
+                    expect(res.body).to.have.property("message");
+                    expect(res.body.message).to.equal("Enjoy your token!");
+                    expect(res.body).to.have.property("token");
+                    expect(res.body.token).to.be.a('string');
 
-    describe('/_id Routes', function() {
-        // beforeEach('signup and authenticate new user');
+                    token = res.body.token;
 
-        it('should return 200 with proper authentication');
+                    done();
+                });
+            });
+        });
 
-        it('should update the user with new info');
+        it('should return all users', function(done) {
+            api.get('/users')
+            .set('Accept', 'application/json')
+            .set('x-access-token', token)
+            .expect(200)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("users");
+                done();
+            });
+        });
 
-        it('should delete the user');
+        it('should return the current user', function(done) {
+            api.get('/me')
+            .set('Accept', 'application/json')
+            .set('x-access-token', token)
+            .expect(200)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("email");
+                expect(res.body.email).to.equal(user_email);
+                expect(res.body).to.have.property("_id");
+                expect(res.body._id).to.be.a("string");
+                expect(res.body).to.have.property("iat");
+                expect(res.body.iat).to.be.a("number");
+                expect(res.body).to.have.property("exp");
+                expect(res.body.exp).to.be.a("number");
 
-        // afterEach('authenticate and delete new user');
+                user_id = res.body._id;
+
+                done();
+            });
+        });
+
+        it('should return a user', function(done) {
+            api.get('/users/' + user_id)
+            .set('Accept', 'application/json')
+            .set('x-access-token', token)
+            .expect(200)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("_id");
+                expect(res.body._id).to.be.a("string");
+                expect(res.body).to.have.property("email");
+                expect(res.body.email).to.equal(user_email);
+                expect(res.body).to.have.property("created");
+                expect(res.body.created).to.be.a("string");
+                done();
+            });
+        });
+
+        it('should update the user with new info', function(done) {
+            api.put('/users/' + user_id)
+            .set('Accept', 'application/json')
+            .set('x-access-token', token)
+            .send({ email: "new_email@test.com", password: "new_password" })
+            .expect(200)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(true);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("User updated.");
+                done();
+            });
+        });
+
+        it('should delete the user', function(done) {
+            api.delete('/users/' + user_id)
+            .set('Accept', 'application/json')
+            .set('x-access-token', token)
+            .expect(200)
+            .end(function(err, res) {
+                expect(res.body).to.have.property("success");
+                expect(res.body.success).to.equal(true);
+                expect(res.body).to.have.property("message");
+                expect(res.body.message).to.equal("User deleted.");
+
+                if(res.body.success) {
+                    deleted = true;
+                }
+
+                done();
+            });
+        });
+
+        after('authenticate and delete new user', function(done) {
+            if(!deleted) {
+                cleanUser(user_email, user_pass, done);
+            } else {
+                done();
+            }
+        });
     });
 });
 
@@ -126,6 +321,7 @@ function cleanUser(user_email, user_pass, done) {
     api.post('/authenticate')
     .send({ email: user_email, password: user_pass })
     .set('Accept', 'application')
+    .expect(200)
     .end(function(err, res) {
         expect(res.body).to.have.property("success");
         expect(res.body.success).to.equal(true);
@@ -142,6 +338,7 @@ function cleanUser(user_email, user_pass, done) {
             api.get('/me')
             .set('Accept', 'application/json')
             .set('x-access-token', token)
+            .expect(200)
             .end(function(err, res) {
                 expect(res.body).to.have.property("_id");
 
@@ -153,7 +350,7 @@ function cleanUser(user_email, user_pass, done) {
                     expect(res.body).to.have.property("success");
                     expect(res.body.success).to.equal(true);
                     expect(res.body).to.have.property("message");
-                    expect(res.body.message).to.equal("Successfully deleted.");
+                    expect(res.body.message).to.equal("User deleted.");
                     done();
                 });
             });

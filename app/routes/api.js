@@ -135,7 +135,7 @@ module.exports = function(app, express) {
             jwt.verify(token, secret, function(err, decoded) {
                 if (err) {
                     // send 403 - Forbidden if the token is wrong
-                    return res.status(403).send({
+                    return res.status(403).json({
                         success: false,
                         message: 'Failed to authenticate token.'
                     });
@@ -148,7 +148,7 @@ module.exports = function(app, express) {
             });
         } else {
             // send 401 - Unauthorized if there's no token
-            return res.status(401).send({
+            return res.status(401).json({
                 success: false,
                 message: 'No token provided.'
             });
@@ -386,7 +386,7 @@ module.exports = function(app, express) {
                 if (err) res.send(err);
 
                 // return the users
-                res.json(users);
+                res.json({ users: users });
             });
         });
 
@@ -408,6 +408,8 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err) res.send(err);
 
+                // TODO: add failure if no data is given
+
                 // set the new user info if it exists in the request
                 if (req.body.email) user.email = req.body.email;
                 if (req.body.password) user.password = req.body.password;
@@ -416,7 +418,7 @@ module.exports = function(app, express) {
                     if (err) res.send(err);
 
                     // return confirmation message
-                    res.json({ message: 'User updated!' });
+                    res.json({ success: true, message: 'User updated.' });
                 });
             });
         })
@@ -427,11 +429,17 @@ module.exports = function(app, express) {
                 if (err) return res.send(err);
 
                 // return confirmation message
-                res.json({ success: true, message: 'Successfully deleted.' });
+                res.json({ success: true, message: 'User deleted.' });
             });
         });
 
     // api endpoint to get user info
+    //
+    // Returns:
+    // - email
+    // - _id
+    // - iat
+    // - exp
     apiRouter.get('/me', function(req, res) {
         res.send(req.decoded);
     });
