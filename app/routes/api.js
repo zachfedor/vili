@@ -134,7 +134,7 @@ module.exports = function(app, express) {
         if (token) {
             jwt.verify(token, secret, function(err, decoded) {
                 if (err) {
-                    // send 403 - Forbidden if the token is wrong
+                    // send 403 - Forbidden if there is a problem with the token
                     return res.status(403).json({
                         success: false,
                         message: 'Failed to authenticate token.'
@@ -408,7 +408,7 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err) res.send(err);
 
-                // TODO: add failure if no data is given
+                // TODO: add failure if no data was received
 
                 // set the new user info if it exists in the request
                 if (req.body.email) user.email = req.body.email;
