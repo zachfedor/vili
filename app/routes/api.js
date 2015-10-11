@@ -155,6 +155,18 @@ module.exports = function(app, express) {
         }
     });
 
+    // function for user access control
+    function authorize(res, resource_id, current_id, resource) {
+        if (resource_id != current_id) {
+            return res.status(401).json({
+                success: false,
+                message: "Authorization failed. You do not have access to " + resource
+            });
+        } else {
+            return true;
+        }
+    }
+
 // General Routes ===============================
     // access at GET http://localhost:8080/api
     apiRouter.get('/', function(req, res) {
@@ -176,6 +188,13 @@ module.exports = function(app, express) {
 
         // create a project (accessed at POST http://localhost:8080/api/projects)
         .post(function(req, res) {
+            if(!req.body.name) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Project creation failed. Name is required."
+                });
+            }
+
             // create a new instance of Project model
             var project = new Project();
             // set the data from the request
@@ -187,16 +206,19 @@ module.exports = function(app, express) {
                 if (err) {
                     console.log(err);
                     if (err.code == 11000) {
-                        return res.json({
+                        return res.status(400).json({
                             success: false,
-                            message: 'A project with that name already exists.'
+                            message: 'A Project with that name already exists.'
                         });
                     } else {
-                        return res.send(err);
+                        return res.status(400).send(err);
                     }
                 }
 
-                res.json({ message: 'Project Created!' });
+                res.status(201).json({
+                    success: true,
+                    message: 'Project created.'
+                });
             });
         });
 
@@ -206,6 +228,13 @@ module.exports = function(app, express) {
         .get(function(req, res) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
+
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
 
                 // return that project
                 res.json(project);
@@ -217,26 +246,41 @@ module.exports = function(app, express) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // set the new project name if it exists in the request
                 if (req.body.name) {
                     project.name = req.body.name;
                     project.unique_name = req.decoded._id + "_" + req.body.name;
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Update failed. Project name is required."
+                    })
                 }
 
                 project.save(function(err) {
                     if (err) {
                         if (err.code == 11000) {
-                            return res.json({
+                            return res.status(400).json({
                                 success: false,
-                                message: 'A project with that name already exists. '
+                                message: 'Update failed. That project name already exists.'
                             });
                         } else {
-                            return res.send(err);
+                            return res.status(400).send(err);
                         }
                     }
 
                     // return confirmation message
-                    res.json({ message: 'Project updated!' });
+                    res.status(201).json({
+                        success: true,
+                        message: 'Project updated.'
+                    });
                 });
             });
         })
@@ -246,8 +290,18 @@ module.exports = function(app, express) {
             Project.remove({ _id: req.params.project_id }, function(err, project) {
                 if (err) return res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // return confirmation message
-                res.json({ message: 'Successfully deleted' });
+                res.status(200).json({
+                    success: true,
+                    message: 'Project deleted.'
+                });
             });
         });
 
