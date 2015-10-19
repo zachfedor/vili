@@ -16,6 +16,7 @@ var bodyParser = require('body-parser'),
     User = require('../models/user'),
     Project = require('../models/project.js'),
     jwt = require('jsonwebtoken'),
+    mongoose = require('mongoose'),
     config = require('../../config');
 
 var secret = config.secret;
@@ -313,6 +314,13 @@ module.exports = function(app, express) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // return the project
                 res.json(project);
             });
@@ -322,6 +330,13 @@ module.exports = function(app, express) {
         .put(function(req, res) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
+
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
 
                 // check for running timer
                 var timer_running = false;
@@ -354,7 +369,8 @@ module.exports = function(app, express) {
                 } else {
                     // start timer
                     project.times.push({
-                        start: Date.now()
+                        start: Date.now(),
+                        _id: mongoose.Types.ObjectId()
                     });
 
                     project.save(function(err) {
@@ -362,7 +378,7 @@ module.exports = function(app, express) {
 
                         res.json({
                             success: true,
-                            message: 'Timer started'
+                            message: 'Timer started.'
                         });
                     });
                 }
@@ -374,19 +390,26 @@ module.exports = function(app, express) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // check for running timer
                 var last_timer = project.times[ project.times.length - 1 ];
                 if (!last_timer) {
                     // there is no timer for this project yet
-                    return res.json({
+                    return res.status(400).json({
                         success: false,
-                        message: 'This project hasn\'t been timed yet.'
+                        message: 'Delete failed. This project hasn\'t been timed yet.'
                     });
                 } else if (last_timer.end) {
                     // the last timer has ended
-                    return res.json({
+                    return res.status(400).json({
                         success: false,
-                        message: 'There is no timer running to cancel.'
+                        message: 'Delete failed. This project has no running timer.'
                     });
                 } else {
                     // delete last time
@@ -451,7 +474,6 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err) res.send(err);
 
-                console.log(user.created);
                 // return that user
                 res.json(user);
             });

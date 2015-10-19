@@ -24,7 +24,7 @@ var ProjectSchema = new Schema({
         }
     },
     times: [{
-        id: Schema.Types.ObjectId,
+        _id: Schema.Types.ObjectId,
         start: Date,
         end: Date,
         total: Number

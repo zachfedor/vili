@@ -144,9 +144,6 @@ describe('Project', function() {
                 expect(res.body).to.have.property("message");
                 expect(res.body.message).to.equal("Project created.");
 
-                // set project1_2 so that it gets deleted during teardown
-                project1_2 = true;
-
                 done();
             });
         });
@@ -339,6 +336,18 @@ describe('Project', function() {
     });
 
     after('teardown all users and projects', function(done) {
+        if (Project.find({ name: project1_name })) {
+            Project.remove({ name: project1_name }, function(err) {
+                if(err) console.log(err);
+            });
+        }
+
+        if (Project.find({ name: project2_name })) {
+            Project.remove({ name: project2_name }, function(err) {
+                if(err) console.log(err);
+            });
+        }
+
         if (User.find({ _id: user1._id })) {
             User.remove({ _id: user1._id }, function(err, user) {
                 if(err) console.log(err);
@@ -350,30 +359,6 @@ describe('Project', function() {
                 if(err) console.log(err);
             });
         }
-
-        if (Project.find({ _id: project1_1._id })) {
-            Project.remove({ _id: project1_1._id }, function(err) {
-                if(err) console.log(err);
-            });
-        }
-
-        // if (Project.find({ _id: project1_2._id })) {
-        //     Project.remove({ _id: project1_2._id }, function(err) {
-        //         if(err) console.log(err);
-        //     });
-        // }
-
-        if (Project.find({ _id: project2_1._id })) {
-            Project.remove({ _id: project2_1._id }, function(err) {
-                if(err) console.log(err);
-            });
-        }
-
-        // if (project2_2 && Project.find({ _id: project2_2._id })) {
-        //     Project.remove({ _id: project2_2._id }, function(err) {
-        //         if(err) console.log(err);
-        //     });
-        // }
 
         done();
     });
