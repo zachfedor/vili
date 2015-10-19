@@ -16,6 +16,7 @@ var bodyParser = require('body-parser'),
     User = require('../models/user'),
     Project = require('../models/project.js'),
     jwt = require('jsonwebtoken'),
+    mongoose = require('mongoose'),
     config = require('../../config');
 
 var secret = config.secret;
@@ -28,6 +29,19 @@ module.exports = function(app, express) {
     // to register a new sign up (POST http://localhost:8080/api/signup)
     apiRouter.post('/signup', function(req, res) {
         console.log('registering a newb');
+
+        // validating parameters
+        if (!req.body.email) {
+            return res.json({
+                success: false,
+                message: 'Sign up failed. Email is required.'
+            });
+        } else if (!req.body.password) {
+            return res.json({
+                success: false,
+                message: 'Sign up failed. Password is required.'
+            });
+        }
 
         // create new instance of User model
         var user = new User();
@@ -49,7 +63,7 @@ module.exports = function(app, express) {
                 }
             }
 
-            res.json({ message: 'User has signed in!' });
+            res.json({ success: true, message: 'User has signed up!' });
         });
     });
 
@@ -57,9 +71,21 @@ module.exports = function(app, express) {
     apiRouter.post('/authenticate', function(req, res) {
         console.log('post to authenticate');
 
+        if (req.body.email) email = req.body.email;
+        else return res.json({
+            success: false,
+            message: 'Authentication failed. Email is required.'
+        });
+
+        if (req.body.password) password = req.body.password;
+        else return res.json({
+            success: false,
+            message: 'Authentication failed. Password is required.'
+        });
+
         // find the user
         User.findOne({
-            email: req.body.email
+            email: email
         }).select('_id email password').exec(function(err, user) {
             if (err) throw err;
 
@@ -70,7 +96,7 @@ module.exports = function(app, express) {
                     message: 'Authentication failed. Email not found.'
                 });
             } else if (user) {
-                var validPassword = user.comparePassword(req.body.password);
+                var validPassword = user.comparePassword(password);
 
                 // user exists but password doesn't match
                 if (!validPassword) {
@@ -109,7 +135,8 @@ module.exports = function(app, express) {
         if (token) {
             jwt.verify(token, secret, function(err, decoded) {
                 if (err) {
-                    return res.status(403).send({
+                    // send 403 - Forbidden if there is a problem with the token
+                    return res.status(403).json({
                         success: false,
                         message: 'Failed to authenticate token.'
                     });
@@ -121,13 +148,25 @@ module.exports = function(app, express) {
                 }
             });
         } else {
-            // send access forbidden if theres no token
-            return res.status(403).send({
+            // send 401 - Unauthorized if there's no token
+            return res.status(401).json({
                 success: false,
                 message: 'No token provided.'
             });
         }
     });
+
+    // function for user access control
+    function authorize(res, resource_id, current_id, resource) {
+        if (resource_id != current_id) {
+            return res.status(401).json({
+                success: false,
+                message: "Authorization failed. You do not have access to " + resource
+            });
+        } else {
+            return true;
+        }
+    }
 
 // General Routes ===============================
     // access at GET http://localhost:8080/api
@@ -150,6 +189,13 @@ module.exports = function(app, express) {
 
         // create a project (accessed at POST http://localhost:8080/api/projects)
         .post(function(req, res) {
+            if(!req.body.name) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Project creation failed. Name is required."
+                });
+            }
+
             // create a new instance of Project model
             var project = new Project();
             // set the data from the request
@@ -161,16 +207,19 @@ module.exports = function(app, express) {
                 if (err) {
                     console.log(err);
                     if (err.code == 11000) {
-                        return res.json({
+                        return res.status(400).json({
                             success: false,
-                            message: 'A project with that name already exists.'
+                            message: 'A Project with that name already exists.'
                         });
                     } else {
-                        return res.send(err);
+                        return res.status(400).send(err);
                     }
                 }
 
-                res.json({ message: 'Project Created!' });
+                res.status(201).json({
+                    success: true,
+                    message: 'Project created.'
+                });
             });
         });
 
@@ -180,6 +229,13 @@ module.exports = function(app, express) {
         .get(function(req, res) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
+
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
 
                 // return that project
                 res.json(project);
@@ -191,26 +247,41 @@ module.exports = function(app, express) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // set the new project name if it exists in the request
                 if (req.body.name) {
                     project.name = req.body.name;
                     project.unique_name = req.decoded._id + "_" + req.body.name;
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Update failed. Project name is required."
+                    })
                 }
 
                 project.save(function(err) {
                     if (err) {
                         if (err.code == 11000) {
-                            return res.json({
+                            return res.status(400).json({
                                 success: false,
-                                message: 'A project with that name already exists. '
+                                message: 'Update failed. That project name already exists.'
                             });
                         } else {
-                            return res.send(err);
+                            return res.status(400).send(err);
                         }
                     }
 
                     // return confirmation message
-                    res.json({ message: 'Project updated!' });
+                    res.status(201).json({
+                        success: true,
+                        message: 'Project updated.'
+                    });
                 });
             });
         })
@@ -220,8 +291,18 @@ module.exports = function(app, express) {
             Project.remove({ _id: req.params.project_id }, function(err, project) {
                 if (err) return res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // return confirmation message
-                res.json({ message: 'Successfully deleted' });
+                res.status(200).json({
+                    success: true,
+                    message: 'Project deleted.'
+                });
             });
         });
 
@@ -233,6 +314,13 @@ module.exports = function(app, express) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // return the project
                 res.json(project);
             });
@@ -242,6 +330,13 @@ module.exports = function(app, express) {
         .put(function(req, res) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
+
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
 
                 // check for running timer
                 var timer_running = false;
@@ -274,7 +369,8 @@ module.exports = function(app, express) {
                 } else {
                     // start timer
                     project.times.push({
-                        start: Date.now()
+                        start: Date.now(),
+                        _id: mongoose.Types.ObjectId()
                     });
 
                     project.save(function(err) {
@@ -282,7 +378,7 @@ module.exports = function(app, express) {
 
                         res.json({
                             success: true,
-                            message: 'Timer started'
+                            message: 'Timer started.'
                         });
                     });
                 }
@@ -294,19 +390,26 @@ module.exports = function(app, express) {
             Project.findById(req.params.project_id, function(err, project) {
                 if (err) res.send(err);
 
+                if(project.user_id != req.decoded._id) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Authorization failed. You do not have access to this project."
+                    });
+                }
+
                 // check for running timer
                 var last_timer = project.times[ project.times.length - 1 ];
                 if (!last_timer) {
                     // there is no timer for this project yet
-                    return res.json({
+                    return res.status(400).json({
                         success: false,
-                        message: 'This project hasn\'t been timed yet.'
+                        message: 'Delete failed. This project hasn\'t been timed yet.'
                     });
                 } else if (last_timer.end) {
                     // the last timer has ended
-                    return res.json({
+                    return res.status(400).json({
                         success: false,
-                        message: 'There is no timer running to cancel.'
+                        message: 'Delete failed. This project has no running timer.'
                     });
                 } else {
                     // delete last time
@@ -328,6 +431,7 @@ module.exports = function(app, express) {
     // for routes ending in /users
     apiRouter.route('/users')
         // create a user (accessed at POST http://localhost:8080/api/users)
+        /*
         .post(function(req, res) {
             // create new instance of User model
             var user = new User();
@@ -351,6 +455,7 @@ module.exports = function(app, express) {
                 res.json({ message: 'User Created!' });
             });
         })
+        */
 
         // get all users (accessed at GET http://localhost:8080/api/users)
         .get(function(req, res) {
@@ -358,7 +463,7 @@ module.exports = function(app, express) {
                 if (err) res.send(err);
 
                 // return the users
-                res.json(users);
+                res.json({ users: users });
             });
         });
 
@@ -369,7 +474,6 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err) res.send(err);
 
-                console.log(user.created);
                 // return that user
                 res.json(user);
             });
@@ -380,6 +484,8 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err) res.send(err);
 
+                // TODO: add failure if no data was received
+
                 // set the new user info if it exists in the request
                 if (req.body.email) user.email = req.body.email;
                 if (req.body.password) user.password = req.body.password;
@@ -388,7 +494,7 @@ module.exports = function(app, express) {
                     if (err) res.send(err);
 
                     // return confirmation message
-                    res.json({ message: 'User updated!' });
+                    res.json({ success: true, message: 'User updated.' });
                 });
             });
         })
@@ -399,11 +505,17 @@ module.exports = function(app, express) {
                 if (err) return res.send(err);
 
                 // return confirmation message
-                res.json({ message: 'Successfully deleted' });
+                res.json({ success: true, message: 'User deleted.' });
             });
         });
 
     // api endpoint to get user info
+    //
+    // Returns:
+    // - email
+    // - _id
+    // - iat
+    // - exp
     apiRouter.get('/me', function(req, res) {
         res.send(req.decoded);
     });
