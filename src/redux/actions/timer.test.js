@@ -3,9 +3,11 @@ import * as actions from './timer';
 describe('Timer Actions', () => {
   describe('startTimer', () => {
     it('should return the correct action', () => {
-      const actual = actions.startTimer();
+      const now = Date.now();
+      const actual = actions.startTimer(now);
       const expected = {
         type: actions.TIMER_START,
+        startAt: now,
       };
 
       expect(actual).toEqual(expected);
@@ -14,20 +16,11 @@ describe('Timer Actions', () => {
 
   describe('pauseTimer', () => {
     it('should return the correct action', () => {
-      const actual = actions.pauseTimer();
+      const now = Date.now();
+      const actual = actions.pauseTimer(now);
       const expected = {
         type: actions.TIMER_PAUSE,
-      };
-
-      expect(actual).toEqual(expected);
-    });
-  });
-
-  describe('resumeTimer', () => {
-    it('should return the correct action', () => {
-      const actual = actions.resumeTimer();
-      const expected = {
-        type: actions.TIMER_RESUME,
+        pauseAt: now,
       };
 
       expect(actual).toEqual(expected);
@@ -39,17 +32,6 @@ describe('Timer Actions', () => {
       const actual = actions.stopTimer();
       const expected = {
         type: actions.TIMER_STOP,
-      };
-
-      expect(actual).toEqual(expected);
-    });
-  });
-
-  describe('cancelTimer', () => {
-    it('should return the correct action', () => {
-      const actual = actions.cancelTimer();
-      const expected = {
-        type: actions.TIMER_CANCEL,
       };
 
       expect(actual).toEqual(expected);
