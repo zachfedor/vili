@@ -8,9 +8,10 @@ describe('Project Actions', () => {
 
   describe('createProject', () => {
     it('should return the correct action', () => {
-      const actual = actions.createProject(mockProject);
+      const actual = actions.createProject(1, mockProject);
       const expected = {
         type: actions.CREATE_PROJECT,
+        id: 1,
         project: mockProject,
       };
 
