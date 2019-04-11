@@ -1,7 +1,6 @@
 # TODO
 
-- 2017-10-17:
-  - [x] fix broken enzyme adapter / react@16 issue
-- 2017-10-18:
-  - [ ] finish testing /Timer components
-
+- 2019-04-11:
+  - [ ] copy over flask boilerplate and get basic server running
+  - [ ] build out user auth and sessions
+  - [ ] start working on time intervals which is a big unknown
