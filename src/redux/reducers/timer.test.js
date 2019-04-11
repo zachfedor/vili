@@ -4,18 +4,18 @@ import * as actions from '../actions/timer';
 describe('Timer Reducer', () => {
   const timestamp = Date.now();
   const runningState = {
-    start: timestamp,
+    startedAt: timestamp,
     chunks: [],
   };
   const pausedState = {
-    start: null,
-    chunks: [{ start: timestamp, duration: Date.now() - timestamp }],
+    startedAt: null,
+    chunks: [{ startedAt: timestamp, duration: Date.now() - timestamp }],
   };
 
   it('should return initial state', () => {
     const actual = timer(undefined, { type: 'UNKNOWN_ACTION' });
     const expected = {
-      start: null,
+      startedAt: null,
       chunks: [],
     };
 
@@ -26,7 +26,7 @@ describe('Timer Reducer', () => {
     it('should should start a timer', () => {
       const actual = timer(initialState, actions.startTimer(timestamp));
       const expected = {
-        start: timestamp,
+        startedAt: timestamp,
         chunks: [],
       };
 
@@ -44,8 +44,8 @@ describe('Timer Reducer', () => {
     it('should should pause a running timer', () => {
       const actual = timer(runningState, actions.pauseTimer(timestamp + 10));
       const expected = {
-        start: null,
-        chunks: [{ start: timestamp, duration: 10 }],
+        startedAt: null,
+        chunks: [{ startedAt: timestamp, duration: 10 }],
       };
 
       expect(actual).toEqual(expected);

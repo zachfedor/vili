@@ -5,7 +5,7 @@ import {
 } from '../actions/timer';
 
 export const initialState = {
-  start: null,
+  startedAt: null,
   chunks: [],
 };
 
@@ -14,22 +14,22 @@ const timer = (state = initialState, action) => {
 
     case TIMER_START:
       // Don't start the timer if it's already running
-      if (state.start !== null) return state;
+      if (state.startedAt !== null) return state;
 
       return {
         ...state,
-        start: action.startAt,
+        startedAt: action.startAt,
       };
 
     case TIMER_PAUSE:
       // Don't pause the timer if it isn't running
-      if (state.start === null) return state;
+      if (state.startedAt === null) return state;
 
       return {
-        start: null,
+        startedAt: null,
         chunks: [
           ...state.chunks,
-          { start: state.start, duration: action.pauseAt - state.start },
+          { startedAt: state.startedAt, duration: action.pauseAt - state.startedAt },
         ],
       };
 

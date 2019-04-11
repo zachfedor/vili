@@ -16,9 +16,11 @@ export const pauseTimer = (pauseAt) => {
   };
 };
 
-export const stopTimer = () => {
+export const stopTimer = (id, elapsed) => {
   return {
     type: TIMER_STOP,
+    id,
+    elapsed,
   };
 };
 

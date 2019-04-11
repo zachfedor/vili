@@ -1,5 +1,6 @@
 import projects, { initialState } from './projects';
 import * as actions from '../actions/project';
+import { stopTimer } from '../actions/timer';
 
 describe('Projects Reducer', () => {
   const mockProjects = {
@@ -41,6 +42,22 @@ describe('Projects Reducer', () => {
       const actual = projects(mockProjects, action);
       const expected = {
         1: mockProjects[2],
+        2: mockProjects[2],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('On Timer Stop', () => {
+    it('should add elapsed time to an existing project', () => {
+      const action = stopTimer(1, 10);
+      const actual = projects(mockProjects, action);
+      const expected = {
+        1: {
+          ...mockProjects[1],
+          times: [{ elapsed: 10 }],
+        },
         2: mockProjects[2],
       };
 

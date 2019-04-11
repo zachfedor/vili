@@ -1,0 +1,185 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TimerDisplay should render elapsed time 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <TimerDisplay
+    startedAt={"2017-01-01T05:00:00.000Z"}
+/>,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": null,
+    "nodeType": "host",
+    "props": Object {
+      "children": Array [
+        <span
+          className="hours"
+>
+          00
+</span>,
+        <span
+          className="minutes"
+>
+          :
+          00
+</span>,
+        <span
+          className="seconds"
+>
+          .
+          00
+</span>,
+      ],
+      "className": "TimerDisplay",
+    },
+    "ref": null,
+    "rendered": Array [
+      Object {
+        "instance": null,
+        "key": null,
+        "nodeType": "host",
+        "props": Object {
+          "children": "00",
+          "className": "hours",
+        },
+        "ref": null,
+        "rendered": "00",
+        "type": "span",
+      },
+      Object {
+        "instance": null,
+        "key": null,
+        "nodeType": "host",
+        "props": Object {
+          "children": Array [
+            ":",
+            "00",
+          ],
+          "className": "minutes",
+        },
+        "ref": null,
+        "rendered": Array [
+          ":",
+          "00",
+        ],
+        "type": "span",
+      },
+      Object {
+        "instance": null,
+        "key": null,
+        "nodeType": "host",
+        "props": Object {
+          "children": Array [
+            ".",
+            "00",
+          ],
+          "className": "seconds",
+        },
+        "ref": null,
+        "rendered": Array [
+          ".",
+          "00",
+        ],
+        "type": "span",
+      },
+    ],
+    "type": "div",
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": null,
+      "nodeType": "host",
+      "props": Object {
+        "children": Array [
+          <span
+            className="hours"
+>
+            00
+</span>,
+          <span
+            className="minutes"
+>
+            :
+            00
+</span>,
+          <span
+            className="seconds"
+>
+            .
+            00
+</span>,
+        ],
+        "className": "TimerDisplay",
+      },
+      "ref": null,
+      "rendered": Array [
+        Object {
+          "instance": null,
+          "key": null,
+          "nodeType": "host",
+          "props": Object {
+            "children": "00",
+            "className": "hours",
+          },
+          "ref": null,
+          "rendered": "00",
+          "type": "span",
+        },
+        Object {
+          "instance": null,
+          "key": null,
+          "nodeType": "host",
+          "props": Object {
+            "children": Array [
+              ":",
+              "00",
+            ],
+            "className": "minutes",
+          },
+          "ref": null,
+          "rendered": Array [
+            ":",
+            "00",
+          ],
+          "type": "span",
+        },
+        Object {
+          "instance": null,
+          "key": null,
+          "nodeType": "host",
+          "props": Object {
+            "children": Array [
+              ".",
+              "00",
+            ],
+            "className": "seconds",
+          },
+          "ref": null,
+          "rendered": Array [
+            ".",
+            "00",
+          ],
+          "type": "span",
+        },
+      ],
+      "type": "div",
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+  },
+}
+`;

@@ -1,59 +1,21 @@
-import React, { Component } from 'react';
+import React from 'react';
 import moment from 'moment';
 import logo from './logo.svg';
+import TimerContainer from './Timer/TimerContainer';
 import './App.css';
 
 
-class Timer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { elapsed: 0 };
-    this.tick = this.tick.bind(this);
-  }
-
-  componentDidMount() {
-    this.timer = setInterval(this.tick, 1000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timer);
-  }
-
-  tick() {
-    this.setState({ elapsed: moment().diff(this.props.startTime) });
-  }
-
-  format(x) {
-    return x < 10 ? `0${x}` : x;
-  }
-
-  render() {
-    const duration = moment.duration(this.state.elapsed);
-    const hours = this.format(duration.hours());
-    const minutes = this.format(duration.minutes());
-    const seconds = this.format(duration.seconds());
-
-    return (
-      <div className="Timer">
-        <span className="hours">{hours}</span>
-        <span className="minutes">:{minutes}</span>
-        <span className="seconds">.{seconds}</span>
-      </div>
-    );
-  }
-}
-
-class App extends Component {
+class App extends React.Component {
   state = {
     startTime: null,
     total: null,
   }
 
-  startTimer() {
+  startTimer = () => {
     this.setState({ startTime: moment() });
   }
 
-  stopTimer() {
+  stopTimer = () => {
     const endTime = moment();
     this.setState({
       endTime,
@@ -76,19 +38,7 @@ class App extends Component {
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
 
-        {this.state.startTime !== null && (
-          <Timer startTime={this.state.startTime} />
-        )}
-
-        {this.state.startTime !== null ? (
-          <button onClick={() => { this.stopTimer(); }}>
-            Stop
-          </button>
-        ) : (
-          <button onClick={() => { this.startTimer(); }}>
-            Start
-          </button>
-        )}
+        <TimerContainer />
 
         {lastTime.isValid() && (
           <p>
